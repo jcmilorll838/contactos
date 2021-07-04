@@ -1,0 +1,227 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Contactos</title>
+        <link href="https://unpkg.com/primevue/resources/themes/saga-blue/theme.css" rel="stylesheet">
+        <link href="https://unpkg.com/primevue/resources/primevue.min.css" rel="stylesheet">
+        <link href="https://unpkg.com/primeicons/primeicons.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="style.css">
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="https://unpkg.com/primevue/inputtext/inputtext.min.js"></script>
+    </head>
+
+    <body>
+        <div id="app" class="container">
+            
+            <button @click="show = !show; error = ''" v-if="!show"class="p-button p-component p-button-rounded">
+                <span class="pi pi-plus p-button-icon p-button-icon-right"></span>
+                <span class="p-button-label">Nuevo Contacto</span>
+                <span class="p-ink" style="height: 97px; width: 97px; top: -20.5px; left: -30.4875px;"></span>
+            </button>
+            <button @click="show = !show" v-if="show" class="p-button p-component p-button-rounded p-button-secondary">
+                <span class="pi pi-list p-button-icon p-button-icon-right"></span>
+                <span class="p-button-label">Contactos</span>
+                <span class="p-ink" style="height: 97px; width: 97px; top: -20.5px; left: -30.4875px;"></span>
+            </button>
+            <br>
+            <br>
+            <transition name="slide-fade">
+                <section v-if="show" class="w-full flex justify-center items-center my-10">
+                    <form @submit.prevent="handleSubmit()">
+                        <div class="form-group">
+                            <!-- <label class="text-gray-600 font-semibold text-lg">Teléfonos</label> -->
+                            <div class="p-col-12 p-mb-2 p-lg-4 p-mb-lg-0">
+                                <span class="p-input-icon-left">
+                                    <i class="pi pi-user"></i>
+                                    <input class="p-inputtext p-component" type="text" placeholder="Name" v-model="name">
+                                </span>
+                            </div>
+                            <br>
+                            <div class="p-col-12 p-mb-2 p-lg-4 p-mb-lg-0">
+                                <span class="p-input-icon-left">
+                                    <i class="pi pi-user"></i>
+                                    <input class="p-inputtext p-component" type="text" placeholder="Nickname" v-model="nickname">
+                                </span>
+                            </div>
+                            <br>
+                            <div 
+                                v-for="(input, index) in phoneNumbers"
+                                :key="`phoneInput-${index}`"
+                                class="input wrapper flex items-center"
+                            >
+                                <input
+                                    v-model="input.value"
+                                    type="text"
+                                    class="p-inputtext p-component"
+                                    placeholder=" Enter Phone Number"
+                                />
+                                <span>&nbsp;</span>
+                                <button
+                                    @click="addField(input, phoneNumbers)"
+                                    class="p-button p-component p-button-icon-only p-button-rounded p-button-success p-button-outlined p-mr-2 p-mb-2" 
+                                    type="button"
+                                >
+                                    <span class="pi pi-plus p-button-icon"></span>
+                                    <span class="p-button-label">&nbsp;</span>
+                                    <span class="p-ink" style="height: 33px; width: 33px; top: 6.61249px; left: -0.475006px;"></span>
+                                </button>
+                                <span>&nbsp;</span>
+                                <button 
+                                    v-show="phoneNumbers.length > 1"
+                                    @click="removeField(index, phoneNumbers)"
+                                    class="p-button p-component p-button-icon-only p-button-rounded p-button-danger p-button-outlined p-mr-2 p-mb-2" 
+                                    type="button"
+                                >
+                                    <span class="pi pi-times p-button-icon"></span>
+                                    <span class="p-button-label">&nbsp;</span>
+                                    <span class="p-ink" style="height: 33px; width: 33px; top: 5.61249px; left: 5.57501px;"></span>
+                                </button>
+                            </div>
+                            <span class="p-error">
+                                {{error}}
+                            </span>
+                            <br>
+                            <br>
+                            <button  
+                                type="submit" 
+                                class="p-button p-component p-button-rounded"
+                            >
+                                <span class="pi pi-check p-button-icon p-button-icon-right"></span>
+                                <span v-if="!edit" class="p-button-label">Submit</span>
+                                <span v-if="edit" class="p-button-label">Editar</span>
+                                <span class="p-ink" style="height: 97px; width: 97px; top: -20.5px; left: -30.4875px;"></span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </transition>
+            <transition name="slide-fade">
+                <section v-if="!show">
+                    
+                    <table class="p-datatable-table" id="tcontact">
+                        <thead class="p-datatable-thead" role="rowgroup">
+                            <th scope="col" class="p-sortable-column">Name</th>
+                            <th scope="col">Nick Name</th>
+                            <th scope="col">Phones</th>
+                            <th scope="col">Editar</th>
+                            <th scope="col">Eliminar</th>
+                        </thead>
+                        <tbody class="p-datatable-tbody"role="rowgroup">
+                        <tr v-for="(contact, i) in contacts">
+                            <td scope="row">{{contact.name}}</td>
+                            <td>{{contact.nick}}</td>
+                            <td>
+                                <li v-for="phone in contact.phones" >
+                                    {{phone.value}}
+                                </li>
+                            </td>
+                            <td>
+                                <button 
+                                    @click="showContact(i, contact)"
+                                    class="p-button p-component p-button-icon-only p-button-rounded p-button-primary p-button-outlined p-mr-2 p-mb-2" 
+                                    type="button"
+                                >
+                                    <span class="pi pi-pencil p-button-icon"></span>
+                                    <span class="p-button-label">&nbsp;</span>
+                                    <span class="p-ink" style="height: 33px; width: 33px; top: 6.61249px; left: -0.475006px;"></span>
+                                </button>
+                            </td>
+                            <td>
+                                <button 
+                                    @click="removeField(i, contacts)"
+                                    class="p-button p-component p-button-icon-only p-button-rounded p-button-danger p-button-outlined p-mr-2 p-mb-2" 
+                                    type="button"
+                                >
+                                    <span class="pi pi-times p-button-icon"></span>
+                                    <span class="p-button-label">&nbsp;</span>
+                                    <span class="p-ink" style="height: 33px; width: 33px; top: 5.61249px; left: 5.57501px;"></span>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </transition>
+            
+        </div>
+        
+        <script>
+            
+            const {createApp, ref} = Vue;
+
+            const App = {
+                setup() {
+                    const name = ref("");
+                    const nickname = ref("");
+                    const phoneNumbers = ref([{value:""}]);
+                    const arr = ref([]);
+                    const contacts = ref([]);
+                    const show = ref(false);
+                    const index = ref(0);
+                    const edit = ref(false);
+                    const error = ref("");
+
+                    return {
+                        name,
+                        nickname,
+                        phoneNumbers,
+                        arr,
+                        contacts,
+                        show,
+                        edit,
+                        error,
+                    };
+                },
+                methods: {
+                    addField(value, fieldType) {
+                        fieldType.push({ value: "" });
+                    },
+                    removeField(index, fieldType) {
+                        fieldType.splice(index, 1);
+                    },
+                    handleSubmit() {
+                        if (this.name == ""){
+                            this.error += 'Se debe ingresar un nombre \n'; 
+                        } 
+                        if (this.phoneNumbers == [{value:""}]){
+                            this.error += 'Se debe ingresar al menos un numero \n';
+                        } 
+                        if (this.error == "") {
+                            if (!this.edit){
+                                
+                                    this.arr.push({name: this.name, nick: this.nickname, phones: this.phoneNumbers});
+                                    const data = JSON.stringify(this.arr)
+                                    window.localStorage.setItem('arr', data);
+                                    this.contacts = JSON.parse(window.localStorage.getItem('arr'));
+                            }
+                            else {
+                                this.contacts.splice(this.index, 1);
+                                this.contacts.push({name: this.name, nick: this.nickname, phones: this.phoneNumbers});  
+                                this.edit = false;  
+                                const data = JSON.stringify(this.contacts)
+                                window.localStorage.setItem('arr', data);
+                            }
+                            
+                            this.name = "";
+                            this.nickname = "";
+                            this.phoneNumbers = [{value : ""}];
+                            this.show = false;
+                            this.error = "";
+                        }
+                    },
+                    showContact(index, item) {
+                        this.name = item.name;
+                        this.nickname = item.nick;
+                        this.phoneNumbers = item.phones;
+                        this.index = index;
+                        this.show = true;
+                        this.edit = true;
+                    }
+                }
+            };
+
+            createApp(App).mount("#app");
+        </script>
+    </body>
+</html>
